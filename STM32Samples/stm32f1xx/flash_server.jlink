@@ -1,0 +1,5 @@
+r
+loadfile build/server/stm32f103_x.x.x_debug.hex
+r
+g
+q

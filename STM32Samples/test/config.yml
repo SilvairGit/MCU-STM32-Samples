@@ -1,0 +1,25 @@
+:cmock:
+  :mock_path: 'build/mocks'
+  :subdir: '.'
+  :enforce_strict_ordering: true
+  :callback_include_count: true
+  :plugins:
+    - 'ignore'
+    - 'ignore_arg'
+    - 'expect_any_args'
+    - 'return_thru_ptr'
+    - 'callback'
+    - 'array'
+  :treat_as:
+    uint32_t: UINT32
+    uint16_t: UINT16
+    uint8_t:  UINT8
+    int32_t:  INT32
+    int16_t:  INT16
+    int8_t:   INT8
+    struct Threads_ThreadHandle: PTR
+  :treat_externs: :include
+  :when_ptr: :smart
+:unity:
+  :enforce_strict_ordering: true
+  :cmdline_args: true
