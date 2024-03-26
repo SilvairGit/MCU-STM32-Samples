@@ -123,14 +123,6 @@ void test_DecodeLenError(void)
     CheckValidFrame();
 }
 
-void test_DecodeCommandOutOfRange1Error1(void)
-{
-    uint8_t uart_frame[] = {UART_FRAME_PREAMBLE_BYTE_1, UART_FRAME_PREAMBLE_BYTE_2, 0x01, 0x00};
-
-    CheckFrameDecodingStatus(uart_frame, sizeof(uart_frame), UART_FRAME_STATUS_COMMAND_ERROR);
-    CheckValidFrame();
-}
-
 void test_DecodeCommandOutOfRange1Error2(void)
 {
     uint8_t uart_frame[] = {UART_FRAME_PREAMBLE_BYTE_1, UART_FRAME_PREAMBLE_BYTE_2, 0x01, UART_FRAME_CMD_RANGE1_END + 1};
@@ -165,6 +157,14 @@ void test_DecodePayloadTooLong(void)
 void test_DecodeProperFrameWithZeroLen(void)
 {
     uint8_t uart_frame[] = {UART_FRAME_PREAMBLE_BYTE_1, UART_FRAME_PREAMBLE_BYTE_2, 0x00, 0x17, 0x7F, 0x80};
+
+    CheckFrameDecodingStatus(uart_frame, sizeof(uart_frame), UART_FRAME_STATUS_FRAME_READY);
+    CheckValidFrame();
+}
+
+void test_DecodeProperFrameWithCmdZero(void)
+{
+    uint8_t uart_frame[] = {UART_FRAME_PREAMBLE_BYTE_1, UART_FRAME_PREAMBLE_BYTE_2, 0x00, 0x00, 0x0D, 0x80};
 
     CheckFrameDecodingStatus(uart_frame, sizeof(uart_frame), UART_FRAME_STATUS_FRAME_READY);
     CheckValidFrame();
@@ -277,14 +277,6 @@ void test_ProcessIncommingDataLenError(void)
     CheckValidFrame();
 }
 
-void test_ProcessIncommingDataCommandOutOfRange1Error1(void)
-{
-    uint8_t uart_frame[] = {UART_FRAME_PREAMBLE_BYTE_1, UART_FRAME_PREAMBLE_BYTE_2, 0x01, 0x00};
-
-    CheckFrameProcessingData(uart_frame, sizeof(uart_frame), false);
-    CheckValidFrame();
-}
-
 void test_ProcessIncommingDataCommandOutOfRange1Error2(void)
 {
     uint8_t uart_frame[] = {UART_FRAME_PREAMBLE_BYTE_1, UART_FRAME_PREAMBLE_BYTE_2, 0x01, UART_FRAME_CMD_RANGE1_END + 1};
@@ -326,6 +318,14 @@ void test_ProcessIncommingDataProperFrameWithZeroLen(void)
     TEST_ASSERT_EQUAL(uart_frame[UART_FRAME_CMD_OFFSET], RxFrame.cmd);
     TEST_ASSERT_TRUE(memcmp(uart_frame + UART_FRAME_HEADER_LEN, RxFrame.p_payload, sizeof(uart_frame) - UART_FRAME_HEADER_LEN - UART_FRAME_CRC_LEN) == 0);
 
+    CheckValidFrame();
+}
+
+void test_ProcessIncommingDataProperFrameWithCmdZero(void)
+{
+    uint8_t uart_frame[] = {UART_FRAME_PREAMBLE_BYTE_1, UART_FRAME_PREAMBLE_BYTE_2, 0x00, 0x00, 0x0D, 0x80};
+
+    CheckFrameProcessingData(uart_frame, sizeof(uart_frame), true);
     CheckValidFrame();
 }
 

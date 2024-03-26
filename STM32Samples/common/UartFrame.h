@@ -13,7 +13,8 @@
 enum UartFrameCmd
 {
     // First range of UART frames command
-    UART_FRAME_CMD_RANGE1_START                    = 0x01,
+    UART_FRAME_CMD_RANGE1_START                    = 0x00,
+    UART_FRAME_CMD_PROHIBITED                      = 0x00,
     UART_FRAME_CMD_PING_REQUEST                    = 0x01,
     UART_FRAME_CMD_PONG_RESPONSE                   = 0x02,
     UART_FRAME_CMD_INIT_DEVICE_EVENT               = 0x03,
