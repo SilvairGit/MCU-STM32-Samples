@@ -247,6 +247,7 @@ static void LcdDrv_LcdSend(uint8_t value, uint8_t mode)
     else
     {
         LcdDrv_Write4bits((value >> 4), mode);
+        Timestamp_DelayMs(1);
         LcdDrv_Write4bits((value & 0x0F), mode);
     }
 }
@@ -267,6 +268,7 @@ static void LcdDrv_Write4bits(uint8_t value, uint8_t mode)
 static void LcdDrv_PulseEnable(uint8_t data)
 {
     LcdDrv_SetOutputPortValue(data | LCD_DRV_PIN_EN_MASK);
+    Timestamp_DelayMs(1);
     LcdDrv_SetOutputPortValue(data & ~LCD_DRV_PIN_EN_MASK);
 }
 

@@ -15,8 +15,8 @@ static bool    ShortenDurationTest;
 static void     SetMainsPowerOff(void);
 static void     SetMainsPowerOn(void);
 static void     ShortenCurrentDurationTest(void);
-static uint16_t AdcHal_ReadChannel_Stub(enum AdcHalChannel adc_channel, int cmock_num_calls);
-static bool     GpioHal_PinRead_Stub(enum GpioHalPin gpio, int cmock_num_calls);
+static uint16_t AdcHal_ReadChannel_StubCbk(enum AdcHalChannel adc_channel, int cmock_num_calls);
+static bool     GpioHal_PinRead_StubCbk(enum GpioHalPin gpio, int cmock_num_calls);
 static void     SetBatteryLevel(uint8_t battery_level_percent);
 
 
@@ -28,8 +28,8 @@ void setUp(void)
     GpioHal_Init_Ignore();
     GpioHal_PinMode_Ignore();
 
-    AdcHal_ReadChannel_StubWithCallback(AdcHal_ReadChannel_Stub);
-    GpioHal_PinRead_StubWithCallback(GpioHal_PinRead_Stub);
+    AdcHal_ReadChannel_StubWithCallback(AdcHal_ReadChannel_StubCbk);
+    GpioHal_PinRead_StubWithCallback(GpioHal_PinRead_StubCbk);
 
     IsInitialized                 = 0;
     Dtr                           = 0;
@@ -796,6 +796,41 @@ void test_FailureStatus_AfterDurationTest(void)
     TEST_ASSERT_EQUAL(0, failure_status);
 }
 
+void test_FailureStatus_SuccessDurationTestAfterFailedDurationTest(void)
+{
+    SetModeOfOperation(DURATION_TEST_IN_PROGRESS);
+
+    for (size_t i = 0; i < (ELT_DURATION_TEST_TIME_S / 2); i++)
+    {
+        EmergencyDriverSimulator_Loop();
+    }
+
+    SetBatteryLevel(0);
+
+    TEST_ASSERT_EQUAL(NORMAL_MODE, GetModeOfOperation());
+
+    uint8_t                 emergency_status   = EmergencyDriverSimulator_QueryEmergencyStatus();
+    struct EmergencyStatus *p_emergency_status = (struct EmergencyStatus *)&emergency_status;
+    TEST_ASSERT_TRUE(p_emergency_status->duration_test_done_and_results_available);
+
+    uint8_t               failure_status   = EmergencyDriverSimulator_QueryFailureStatus();
+    struct FailureStatus *p_failure_status = (struct FailureStatus *)&failure_status;
+    TEST_ASSERT_TRUE(p_failure_status->battery_failure);
+
+    TEST_ASSERT_EQUAL(15, EmergencyDriverSimulator_QueryDurationTestResult());
+
+    SetBatteryLevel(100);
+    SetModeOfOperation(DURATION_TEST_IN_PROGRESS);
+
+    for (size_t i = 0; i < ELT_DURATION_TEST_TIME_S; i++)
+    {
+        EmergencyDriverSimulator_Loop();
+    }
+
+    failure_status = EmergencyDriverSimulator_QueryFailureStatus();
+    TEST_ASSERT_EQUAL(0, failure_status);
+}
+
 void test_DurationTestShortened(void)
 {
     SetModeOfOperation(DURATION_TEST_IN_PROGRESS);
@@ -862,7 +897,7 @@ static void SetBatteryLevel(uint8_t battery_level_percent)
     EmergencyDriverSimulator_Loop();
 }
 
-static uint16_t AdcHal_ReadChannel_Stub(enum AdcHalChannel adc_channel, int cmock_num_calls)
+static uint16_t AdcHal_ReadChannel_StubCbk(enum AdcHalChannel adc_channel, int cmock_num_calls)
 {
     UNUSED(cmock_num_calls);
 
@@ -871,7 +906,7 @@ static uint16_t AdcHal_ReadChannel_Stub(enum AdcHalChannel adc_channel, int cmoc
     return (ADC_HAL_ADC_MAX - (BatteryLevelPercent * (ADC_HAL_ADC_MAX - 2 * EMG_ANALOG_DEAD_RANGE_VALUE) / BATTERY_LEVEL_MAX + EMG_ANALOG_DEAD_RANGE_VALUE));
 }
 
-static bool GpioHal_PinRead_Stub(enum GpioHalPin gpio, int cmock_num_calls)
+static bool GpioHal_PinRead_StubCbk(enum GpioHalPin gpio, int cmock_num_calls)
 {
     UNUSED(cmock_num_calls);
 

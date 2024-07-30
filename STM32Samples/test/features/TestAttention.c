@@ -13,10 +13,10 @@ void test_Init(void)
     TEST_ASSERT_EQUAL(false, Attention_IsInitialized());
 
     GpioHal_IsInitialized_ExpectAndReturn(false);
-    GpioHal_Init_ExpectAnyArgs();
+    GpioHal_Init_Expect();
 
     UartProtocol_IsInitialized_ExpectAndReturn(false);
-    UartProtocol_Init_ExpectAnyArgs();
+    UartProtocol_Init_Expect();
 
     GpioHal_PinMode_Expect(GPIO_HAL_PIN_LED_STATUS, GPIO_HAL_MODE_OUTPUT);
 

@@ -555,6 +555,7 @@ static void SetModeOfOperation(enum ModeOfOperation mode_of_operation)
         case FUNCTION_TEST_IN_PROGRESS:
         {
             memset(&EmergencyMode, 0, sizeof(EmergencyMode));
+            memset(&FailureStatus, 0, sizeof(FailureStatus));
             EmergencyMode.mode_function_test_in_progress_active      = true;
             EmergencyStatus.inhibit_mode_active                      = false;
             EmergencyStatus.function_test_done_and_results_available = false;
@@ -565,6 +566,7 @@ static void SetModeOfOperation(enum ModeOfOperation mode_of_operation)
         case DURATION_TEST_IN_PROGRESS:
         {
             memset(&EmergencyMode, 0, sizeof(EmergencyMode));
+            memset(&FailureStatus, 0, sizeof(FailureStatus));
             EmergencyMode.mode_duration_test_in_progress_active      = true;
             EmergencyStatus.inhibit_mode_active                      = false;
             EmergencyStatus.duration_test_done_and_results_available = false;

@@ -31,7 +31,7 @@ static struct UartProtocolHandlerConfig MessageHandlerConfig = {
 
 static struct TimeReceiver_MeshTimeLastSync LastSyncTime   = {0};
 static bool                                 IsInitialized  = false;
-static uint8_t *                            pInstanceIndex = NULL;
+static uint8_t                             *pInstanceIndex = NULL;
 
 void TimeReceiver_Init(uint8_t *p_instance_index)
 {

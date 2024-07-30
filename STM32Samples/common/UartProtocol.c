@@ -32,7 +32,7 @@ static void    UartProtocol_ProcessIncomingData(void);
 static bool    UartProtocol_ParseMeshMessageRequest(struct UartFrameRxTxFrame *p_rx_frame, struct UartProtocolFrameMeshMessageFrame *p_mesh_message_frame);
 static uint8_t UartProtocol_CheckIfInstanceIndexExist(struct UartFrameRxTxFrame *p_rx_frame);
 static void    UartProtocol_CallAllUartCommandHandlers(struct UartProtocolHandlerConfig *p_handler_config_row, struct UartFrameRxTxFrame *p_rx_frame);
-static void    UartProtocol_CallAllMeshHandlers(struct UartProtocolHandlerConfig *        p_handler_config_row,
+static void    UartProtocol_CallAllMeshHandlers(struct UartProtocolHandlerConfig         *p_handler_config_row,
                                                 struct UartProtocolFrameMeshMessageFrame *p_mesh_message_frame);
 
 void UartProtocol_Init(void)
@@ -259,7 +259,7 @@ static void UartProtocol_CallAllUartCommandHandlers(struct UartProtocolHandlerCo
     }
 }
 
-static void UartProtocol_CallAllMeshHandlers(struct UartProtocolHandlerConfig *        p_handler_config_row,
+static void UartProtocol_CallAllMeshHandlers(struct UartProtocolHandlerConfig         *p_handler_config_row,
                                              struct UartProtocolFrameMeshMessageFrame *p_mesh_message_frame)
 {
     if ((p_handler_config_row->p_mesh_message_opcode_list == NULL) || (p_handler_config_row->p_mesh_message_handler == NULL))

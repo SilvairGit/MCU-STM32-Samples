@@ -65,7 +65,7 @@ struct ModelManagerRegistrationRow
     uint16_t       model_id;
     uint8_t const *p_model_parameter;
     uint8_t        model_parameter_len;
-    uint8_t *      p_instance_index;
+    uint8_t       *p_instance_index;
 };
 
 void ModelManager_RegisterModel(struct ModelManagerRegistrationRow *p_model);

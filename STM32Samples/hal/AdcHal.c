@@ -123,6 +123,8 @@ static void AdcHal_InitDma1Ch1(void)
 
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_1, ADC_NUMBER_OF_SCAN_CHANNELS);
 
+    LL_DMA_ClearFlag_TC1(DMA1);
+
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_1);
 }
 
@@ -219,5 +221,8 @@ static void AdcHal_InitTim4(void)
 
 static void AdcHal_WaitForInitializationDone(void)
 {
-    Timestamp_DelayMs(ADC_HAL_INITIAL_MEASUREMENT_TIME_MS);
+    while (LL_DMA_IsActiveFlag_TC1(DMA1) == 0)
+    {
+        // Wait for DMA transfer complete
+    }
 }

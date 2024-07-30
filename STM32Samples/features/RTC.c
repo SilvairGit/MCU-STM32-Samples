@@ -58,6 +58,7 @@ static struct
 static void LoopRTC(void);
 static void OnSecondElapsed(void);
 static void MeasureBatteryLevel(void);
+static void PeriodicBatteryMeasurement(void);
 static void UpdateBatteryStatus(void);
 static void UpdateHealthFaultStatus(void);
 
@@ -69,7 +70,7 @@ static bool                          IsBatteryDetected          = false;
 static bool                          IsBatteryLevelEverMeasured = false;
 static bool                          IsTimeValid                = false;
 static bool                          IsCountingStopped          = false;
-static uint8_t *                     pInstanceIndex             = NULL;
+static uint8_t                      *pInstanceIndex             = NULL;
 static unsigned long                 LastRtcConnectedTimestamp  = 0;
 static RTCTimeGetProcessedCallback_T TimeGetProcessedCallback   = NULL;
 static RTCTimeSetProcessedCallback_T TimeSetProcessedCallback   = NULL;
@@ -215,7 +216,7 @@ static void LoopRTC(void)
         }
     }
 
-    MeasureBatteryLevel();
+    PeriodicBatteryMeasurement();
 
     if (!TimeSetParams.set_time_pending)
     {
@@ -262,6 +263,29 @@ static void OnSecondElapsed(void)
 
 static void MeasureBatteryLevel(void)
 {
+    uint16_t battery_voltage_mv = AdcHal_ReadChannelMv(ADC_HAL_CHANNEL_RTC_BATTERY, VOLTAGE_DIVIDER_COEFFICIENT);
+
+    LastBatteryLevelPercent = 100;
+    size_t i;
+    for (i = 0; i < ARRAY_SIZE(cr1220_battery_curve_mv) - 1; i++)
+    {
+        if (battery_voltage_mv < cr1220_battery_curve_mv[i])
+        {
+            LastBatteryLevelPercent = (i - 1) * BATTERY_CURVE_STEP_PERCENT;
+            break;
+        }
+    }
+    LOG_D("RTC battery voltage: %d mV (%d%%)", battery_voltage_mv, LastBatteryLevelPercent);
+
+    if (!IsBatteryLevelEverMeasured && (LastBatteryLevelPercent > BATTERY_NOT_DETECTED_THRESHOLD_PERCENT))
+    {
+        IsBatteryDetected = true;
+    }
+    IsBatteryLevelEverMeasured = true;
+}
+
+static void PeriodicBatteryMeasurement(void)
+{
     static unsigned long last_measurement_timestamp = 0;
 
     if (IsBatteryLevelEverMeasured && !IsBatteryDetected)
@@ -271,33 +295,15 @@ static void MeasureBatteryLevel(void)
 
     if ((Timestamp_GetTimeElapsed(last_measurement_timestamp, Timestamp_GetCurrent()) > BATTERY_MEASUREMENT_PERIOD_MS) || (last_measurement_timestamp == 0))
     {
-        uint16_t battery_voltage_mv = AdcHal_ReadChannelMv(ADC_HAL_CHANNEL_RTC_BATTERY, VOLTAGE_DIVIDER_COEFFICIENT);
-
-        LastBatteryLevelPercent = 100;
-        size_t i;
-        for (i = 0; i < ARRAY_SIZE(cr1220_battery_curve_mv) - 1; i++)
-        {
-            if (battery_voltage_mv < cr1220_battery_curve_mv[i])
-            {
-                LastBatteryLevelPercent = (i - 1) * BATTERY_CURVE_STEP_PERCENT;
-                break;
-            }
-        }
+        MeasureBatteryLevel();
 
         if (IsBatteryDetected)
         {
             UpdateBatteryStatus();
             UpdateHealthFaultStatus();
         }
-        LOG_D("RTC battery voltage: %d mV (%d%%)", battery_voltage_mv, LastBatteryLevelPercent);
 
         last_measurement_timestamp = Timestamp_GetCurrent();
-
-        if (!IsBatteryLevelEverMeasured && (LastBatteryLevelPercent > BATTERY_NOT_DETECTED_THRESHOLD_PERCENT))
-        {
-            IsBatteryDetected = true;
-        }
-        IsBatteryLevelEverMeasured = true;
     }
 }
 

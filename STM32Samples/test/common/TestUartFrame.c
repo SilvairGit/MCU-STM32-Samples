@@ -5,7 +5,7 @@
 #include "UartFrame.c"
 #include "unity.h"
 
-static uint8_t *                 StubUartFrame    = NULL;
+static uint8_t                  *StubUartFrame    = NULL;
 static size_t                    StubUartFrameCnt = 0;
 static struct UartFrameRxTxFrame RxFrame          = {0};
 

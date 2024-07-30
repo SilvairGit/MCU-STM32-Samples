@@ -66,9 +66,9 @@ void DeltaEncoder_Loop(void)
                                      *pDeltaTid);
 
             if (is_new_tid)
-                LOG_D("Delta Continue %d", delta);
-            else
                 LOG_D("Delta Start %d", delta);
+            else
+                LOG_D("Delta Continue %d", delta);
 
             EncoderHal_SetPosition(0);
             last_delta_message_time = Timestamp_GetCurrent();

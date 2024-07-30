@@ -89,7 +89,7 @@ struct EnqueuedMsg
 {
     enum MsgType msg_type;
     uint8_t      instance_idx;
-    void *       mesh_msg;
+    void        *mesh_msg;
     uint32_t     dispatch_time;
 };
 

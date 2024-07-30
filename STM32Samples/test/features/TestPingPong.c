@@ -51,7 +51,7 @@ void test_Enable(void)
     TEST_ASSERT_EQUAL(true, PingPongIsEnable);
 }
 
-void UartProtocol_Send_Stub(enum UartFrameCmd cmd, uint8_t *p_payload, uint8_t len, int cmock_num_calls)
+void UartProtocol_Send_StubCbk(enum UartFrameCmd cmd, uint8_t *p_payload, uint8_t len, int cmock_num_calls)
 {
     uint8_t frame_payload[] = "Test";
 
@@ -78,7 +78,7 @@ void test_UartMessageHandlerPingEnable(void)
     p_frame->p_data[index++] = 't';
     p_frame->len             = index;
 
-    UartProtocol_Send_StubWithCallback(UartProtocol_Send_Stub);
+    UartProtocol_Send_StubWithCallback(UartProtocol_Send_StubCbk);
     PingPong_UartMessageHandler((struct UartFrameRxTxFrame *)p_frame);
 }
 

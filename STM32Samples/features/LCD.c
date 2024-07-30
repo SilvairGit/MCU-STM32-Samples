@@ -257,9 +257,9 @@ void LCD_UpdateSensorValue(enum SensorProperty sensorProperty, union SensorValue
             LCD_PreciseEnergySensor.value.precise_energy = sensorValue.precise_energy;
             LCD_PreciseEnergySensor.value_state          = ((sensorValue.precise_energy == MESH_PROP_PRECISE_TOTAL_DEVICE_ENERGY_USE_UNKNOWN_VAL) ||
                                                    (sensorValue.precise_energy == MESH_PROP_PRECISE_TOTAL_DEVICE_ENERGY_USE_NOT_VALID_VAL))
-                                                      ? SENSOR_VALUE_UNKNOWN
-                                                      : SENSOR_VALUE_ACTUAL;
-            LCD_PreciseEnergySensor.value_timestamp = Timestamp_GetCurrent();
+                                                               ? SENSOR_VALUE_UNKNOWN
+                                                               : SENSOR_VALUE_ACTUAL;
+            LCD_PreciseEnergySensor.value_timestamp      = Timestamp_GetCurrent();
             break;
         }
         default:

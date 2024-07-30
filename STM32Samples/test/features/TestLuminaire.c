@@ -53,10 +53,10 @@ void test_InitLc(void)
     TEST_ASSERT_EQUAL(false, Luminaire_IsInitialized());
 
     PwmHal_IsInitialized_ExpectAndReturn(false);
-    PwmHal_Init_ExpectAnyArgs();
+    PwmHal_Init_Expect();
 
     UartProtocol_IsInitialized_ExpectAndReturn(false);
-    UartProtocol_Init_ExpectAnyArgs();
+    UartProtocol_Init_Expect();
 
     ModelManager_RegisterModel_Expect(&ModelConfigLightLcServer);
 
@@ -75,10 +75,10 @@ void test_InitCtl(void)
     TEST_ASSERT_EQUAL(false, Luminaire_IsInitialized());
 
     PwmHal_IsInitialized_ExpectAndReturn(false);
-    PwmHal_Init_ExpectAnyArgs();
+    PwmHal_Init_Expect();
 
     UartProtocol_IsInitialized_ExpectAndReturn(false);
-    UartProtocol_Init_ExpectAnyArgs();
+    UartProtocol_Init_Expect();
 
     ModelManager_RegisterModel_Expect(&ModelConfigLightCtlServer);
 

@@ -4,7 +4,8 @@
 #include "Log.h"
 #include "Platform.h"
 
-#define PWM_HAL_1V_OFFSET_MV 1000
+// Make 1-10V control actually 1.2-10V control to account for some drivers that require slightly higher voltage to turn on
+#define PWM_HAL_1V_OFFSET_MV 1200
 #define PWM_HAL_MAX_VALUE_MV 10000
 
 static bool IsInitialized = false;

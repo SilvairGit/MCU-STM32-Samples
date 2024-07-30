@@ -17,7 +17,7 @@ struct I2cTransaction
     size_t                num_of_bytes;
     uint8_t               i2c_address;
     uint8_t               reg_address;
-    uint8_t *             p_rw_buffer;
+    uint8_t              *p_rw_buffer;
     void (*cb)(struct I2cTransaction *p_transaction);
 };
 

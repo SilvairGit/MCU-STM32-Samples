@@ -69,9 +69,9 @@ struct ButtonInstance
     enum MachineStates  state;
     int16_t             delta_value_on_press;
     enum MachineActions action;
-    uint8_t *           p_instance_idx;
-    uint8_t *           p_onoff_tid;
-    uint8_t *           p_delta_tid;
+    uint8_t            *p_instance_idx;
+    uint8_t            *p_onoff_tid;
+    uint8_t            *p_delta_tid;
 };
 
 struct ButtonInstance Button1;

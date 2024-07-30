@@ -29,8 +29,8 @@ uint8_t ExpectedUartCmdLen;
 uint8_t ExpectedUartCmdId;
 
 
-static void UartProtocol_Send_Stub(enum UartFrameCmd cmd, uint8_t *p_payload, uint8_t len, int cmock_num_calls);
-static void UartProtocol_SendFrame_Stub(struct UartFrameRxTxFrame *p_frame, int cmock_num_calls);
+static void UartProtocol_Send_StubCbk(enum UartFrameCmd cmd, uint8_t *p_payload, uint8_t len, int cmock_num_calls);
+static void UartProtocol_SendFrame_StubCbk(struct UartFrameRxTxFrame *p_frame, int cmock_num_calls);
 static void GetElState_Return(enum EmgLTest_ElState el_state);
 static void ExpectMeshMsqReq(uint8_t *buf, uint8_t buf_len, uint32_t opcode);
 static void ExpectUartCmd(uint8_t *buf, uint8_t buf_len, uint8_t cmd_id);
@@ -41,8 +41,8 @@ void setUp(void)
     EmergencyDriverSimulator_IsInitialized_IgnoreAndReturn(false);
     EmergencyDriverSimulator_Init_Ignore();
     UartProtocol_RegisterMessageHandler_Ignore();
-    UartProtocol_SendFrame_StubWithCallback(UartProtocol_SendFrame_Stub);
-    UartProtocol_Send_StubWithCallback(UartProtocol_Send_Stub);
+    UartProtocol_SendFrame_StubWithCallback(UartProtocol_SendFrame_StubCbk);
+    UartProtocol_Send_StubWithCallback(UartProtocol_Send_StubCbk);
 
     memset(ExpectedMeshMsqReqBuf, 0x00, EXPECTED_RESPONSE_BUF_LEN);
     ExpectedMeshMsqReqLen    = 0;
@@ -962,7 +962,7 @@ void test_UpdateBatteryStatus(void)
     UpdateBatteryStatus();
 }
 
-static void UartProtocol_Send_Stub(enum UartFrameCmd cmd, uint8_t *p_payload, uint8_t len, int cmock_num_calls)
+static void UartProtocol_Send_StubCbk(enum UartFrameCmd cmd, uint8_t *p_payload, uint8_t len, int cmock_num_calls)
 {
     UNUSED(cmock_num_calls);
 
@@ -972,7 +972,7 @@ static void UartProtocol_Send_Stub(enum UartFrameCmd cmd, uint8_t *p_payload, ui
     TEST_ASSERT_EQUAL_UINT8_ARRAY(ExpectedUartCmdBuf, p_payload, ExpectedUartCmdLen);
 }
 
-static void UartProtocol_SendFrame_Stub(struct UartFrameRxTxFrame *p_frame, int cmock_num_calls)
+static void UartProtocol_SendFrame_StubCbk(struct UartFrameRxTxFrame *p_frame, int cmock_num_calls)
 {
     UNUSED(cmock_num_calls);
 

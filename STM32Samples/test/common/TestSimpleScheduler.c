@@ -76,7 +76,7 @@ void test_TaskEnable(void)
     SimpleScheduler_TaskAdd(0, task1, 0, false);
 
     AtomicHal_IrqDisable_Expect();
-    TickHal_GetTimestampMs_ExpectAnyArgsAndReturn(10);
+    TickHal_GetTimestampMs_ExpectAndReturn(10);
 
     AtomicHal_IrqEnable_Expect();
     SimpleScheduler_TaskStateChange(1, false);
@@ -86,7 +86,7 @@ void test_TaskEnable(void)
     TEST_ASSERT_EQUAL(TaskList[1].last_timestamp_cb_called, 10);
 
     AtomicHal_IrqDisable_Expect();
-    TickHal_GetTimestampMs_ExpectAnyArgsAndReturn(25);
+    TickHal_GetTimestampMs_ExpectAndReturn(25);
     AtomicHal_IrqEnable_Expect();
     SimpleScheduler_TaskStateChange(1, true);
     TEST_ASSERT_EQUAL(TaskList[0].is_enable, false);
@@ -95,7 +95,7 @@ void test_TaskEnable(void)
     TEST_ASSERT_EQUAL(TaskList[1].last_timestamp_cb_called, 25);
 
     AtomicHal_IrqDisable_Expect();
-    TickHal_GetTimestampMs_ExpectAnyArgsAndReturn(100);
+    TickHal_GetTimestampMs_ExpectAndReturn(100);
     AtomicHal_IrqEnable_Expect();
     SimpleScheduler_TaskStateChange(1, false);
     TEST_ASSERT_EQUAL(TaskList[0].is_enable, false);
@@ -104,7 +104,7 @@ void test_TaskEnable(void)
     TEST_ASSERT_EQUAL(TaskList[1].last_timestamp_cb_called, 100);
 
     AtomicHal_IrqDisable_Expect();
-    TickHal_GetTimestampMs_ExpectAnyArgsAndReturn(123);
+    TickHal_GetTimestampMs_ExpectAndReturn(123);
     AtomicHal_IrqEnable_Expect();
     SimpleScheduler_TaskStateChange(0, true);
     TEST_ASSERT_EQUAL(TaskList[0].is_enable, false);

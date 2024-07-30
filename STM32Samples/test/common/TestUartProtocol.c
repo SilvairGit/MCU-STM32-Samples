@@ -177,7 +177,7 @@ void test_Init(void)
     Timestamp_DelayMs_Expect(UART_PROTOCOL_FRAME_TIMEOUT_ELAPSED_MS);
     Timestamp_DelayMs_Expect(1000 - UART_PROTOCOL_FRAME_TIMEOUT_ELAPSED_MS);
     UartFrame_IsInitialized_ExpectAndReturn(false);
-    UartFrame_Init_ExpectAnyArgs();
+    UartFrame_Init_Expect();
 
     UartProtocol_Init();
 
@@ -292,7 +292,7 @@ void test_CheckIfInstanceIndexExist(void)
     TEST_ASSERT_EQUAL(instance_index, UART_PROTOCOL_INSTANCE_INDEX_UNKNOWN);
 }
 
-bool UartFrame_ProcessIncomingData_Stub(struct UartFrameRxTxFrame *p_rx_frame, int cmock_num_calls)
+bool UartFrame_ProcessIncomingData_StubCbk(struct UartFrameRxTxFrame *p_rx_frame, int cmock_num_calls)
 {
     memcpy(p_rx_frame, RxFrame, RxFrameSize);
 
@@ -316,7 +316,7 @@ void test_ProcessIncomingDataInstanceIndexMach(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame);
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -343,7 +343,7 @@ void test_ProcessIncomingDataInstanceIndexUnknown(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame);
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -370,7 +370,7 @@ void test_ProcessIncomingDataInstanceIndexNotMach(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame);
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -396,7 +396,7 @@ void test_ProcessIncomingDataUartMessageMatch(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame);
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, UART_FRAME_CMD_SOFTWARE_RESET_REQUEST);
@@ -423,7 +423,7 @@ void test_ProcessIncomingDataTwoUartMessageMatch(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame);
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -453,7 +453,7 @@ void test_ProcessIncomingDataMeshMessageRequestMatch(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame) + 3;
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -483,7 +483,7 @@ void test_ProcessIncomingDataTwoMeshMessageRequestMatch(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame) + 3;
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -513,7 +513,7 @@ void test_ProcessIncomingDataMeshMessageRequest1Match1B(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame) + 3;
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -543,7 +543,7 @@ void test_ProcessIncomingDataMeshMessageRequest1Match2(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame) + 3;
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);
@@ -573,7 +573,7 @@ void test_ProcessIncomingDataMeshMessageRequest1Match3B(void)
     RxFrame     = (struct UartFrameRxTxFrame *)&rx_frame;
     RxFrameSize = sizeof(rx_frame) + 3;
 
-    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_Stub);
+    UartFrame_ProcessIncomingData_StubWithCallback(UartFrame_ProcessIncomingData_StubCbk);
     UartProtocol_ProcessIncomingData();
 
     TEST_ASSERT_EQUAL(UartMessageExpetedCmd1, 0);

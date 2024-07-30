@@ -18,7 +18,7 @@ struct UartProtocolHandlerConfig
     UartProtocolMeshMessageHandler_T p_mesh_message_handler;
 
     const enum UartFrameCmd *p_uart_frame_command_list;
-    const uint32_t *         p_mesh_message_opcode_list;
+    const uint32_t          *p_mesh_message_opcode_list;
 
     uint8_t uart_frame_command_list_len;
     uint8_t mesh_message_opcode_list_len;
