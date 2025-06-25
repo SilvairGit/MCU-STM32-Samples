@@ -25,7 +25,7 @@ void I2cHal_Init(void);
 
 bool I2cHal_IsInitialized(void);
 
-void I2cHal_ProcessTransaction(struct I2cTransaction *p_transaction);
+bool I2cHal_ProcessTransaction(struct I2cTransaction *p_transaction);
 
 bool I2cHal_IsAvaliable(uint8_t address);
 

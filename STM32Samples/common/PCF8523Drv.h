@@ -23,7 +23,7 @@ bool Pcf8523Drv_IsAvailable(void);
 
 void Pcf8523Drv_SetTime(struct Pcf8523Drv_TimeDate *p_time);
 
-void Pcf8523Drv_GetTime(struct Pcf8523Drv_TimeDate *p_time);
+bool Pcf8523Drv_GetTime(struct Pcf8523Drv_TimeDate *p_time);
 
 bool Pcf8523Drv_IsResetState(void);
 

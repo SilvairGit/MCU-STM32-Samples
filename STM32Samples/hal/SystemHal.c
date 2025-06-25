@@ -79,7 +79,11 @@ void SystemHal_PrintBuildInfo(void)
     LOG_D("Build time: %s", __TIME__);
 
     uint8_t *p_fw_version = (uint8_t *)BUILD_NUMBER;
-    LOG_D("FW version: %s", p_fw_version);
+#if MCU_SERVER == 1
+    LOG_D("MCU SERVER FW version %s", p_fw_version);
+#elif MCU_CLIENT == 1
+    LOG_D("MCU CLIENT FW version %s", p_fw_version);
+#endif
 
     LOG_D("STM32 UUID0: 0x%08lX 0x%08lX 0x%08lX", LL_GetUID_Word0(), LL_GetUID_Word1(), LL_GetUID_Word2());
 }

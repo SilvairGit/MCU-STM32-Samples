@@ -102,20 +102,16 @@
 #define PCF8523_DRV_CONTROL_3_VALID_BIT_MASK 0xEF
 #define PCF8523_DRV_CONTROL_3_RESET_DEFAULT_VALUE 0xE0
 
-static bool          IsInitialized           = false;
-static volatile bool IsTransactionInProgress = false;
+static bool IsInitialized = false;
 
-static uint8_t RtcReadReg(uint8_t address);
-static void    RtcWriteReg(uint8_t address, uint8_t data);
-static void    RtcReadRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size);
-static void    RtcWriteRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size);
-static void    RtcStart(void);
-static void    ConfigureIntEverySecond(void);
-static void    ConfigureBatterySwitchOver(void);
-static void    ConfigureInternalCapacitors(void);
-
-
-static void TransactionComplete(struct I2cTransaction *p_transaction);
+static bool RtcReadReg(uint8_t address, uint8_t *p_data);
+static bool RtcWriteReg(uint8_t address, uint8_t data);
+static bool RtcReadRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size);
+static bool RtcWriteRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size);
+static void RtcStart(void);
+static void ConfigureIntEverySecond(void);
+static void ConfigureBatterySwitchOver(void);
+static void ConfigureInternalCapacitors(void);
 
 bool Pcf8523Drv_Init(void)
 {
@@ -137,7 +133,9 @@ bool Pcf8523Drv_Init(void)
         return false;
     }
 
-    if (RtcReadReg(PCF8523_DRV_TMR_B_FREQ_CTRL) == __UINT8_MAX__)
+    uint8_t data   = 0;
+    bool    status = RtcReadReg(PCF8523_DRV_TMR_B_FREQ_CTRL, &data);
+    if ((data == __UINT8_MAX__) || !status)
     {
         LOG_W("RTC is not connected");
 
@@ -164,54 +162,30 @@ bool Pcf8523Drv_IsAvailable(void)
     return I2cHal_IsAvaliable(PCF8523_DRV_ADDRESS);
 }
 
-static uint8_t RtcReadReg(uint8_t address)
+static bool RtcReadReg(uint8_t address, uint8_t *p_data)
 {
-    uint8_t data;
-    RtcReadRegBuff(address, &data, 1);
-    return data;
+    return RtcReadRegBuff(address, p_data, 1);
 }
 
-static void RtcWriteReg(uint8_t address, uint8_t data)
+static bool RtcWriteReg(uint8_t address, uint8_t data)
 {
-    RtcWriteRegBuff(address, &data, 1);
+    return RtcWriteRegBuff(address, &data, 1);
 }
 
-static void RtcReadRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size)
+static bool RtcReadRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size)
 {
-    struct I2cTransaction trans = {.rw           = I2C_TRANSACTION_READ,
-                                   .num_of_bytes = size,
-                                   .i2c_address  = PCF8523_DRV_ADDRESS,
-                                   .reg_address  = address,
-                                   .p_rw_buffer  = p_buf,
-                                   .cb           = TransactionComplete};
+    struct I2cTransaction trans =
+        {.rw = I2C_TRANSACTION_READ, .num_of_bytes = size, .i2c_address = PCF8523_DRV_ADDRESS, .reg_address = address, .p_rw_buffer = p_buf, .cb = NULL};
 
-    IsTransactionInProgress = true;
-    I2cHal_ProcessTransaction(&trans);
-
-    // Ugly, blocking implementation
-    while (IsTransactionInProgress)
-    {
-        // Do nothing
-    };
+    return I2cHal_ProcessTransaction(&trans);
 }
 
-static void RtcWriteRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size)
+static bool RtcWriteRegBuff(uint8_t address, uint8_t *p_buf, uint8_t size)
 {
-    struct I2cTransaction trans = {.rw           = I2C_TRANSACTION_WRITE,
-                                   .num_of_bytes = size,
-                                   .i2c_address  = PCF8523_DRV_ADDRESS,
-                                   .reg_address  = address,
-                                   .p_rw_buffer  = p_buf,
-                                   .cb           = TransactionComplete};
+    struct I2cTransaction trans =
+        {.rw = I2C_TRANSACTION_WRITE, .num_of_bytes = size, .i2c_address = PCF8523_DRV_ADDRESS, .reg_address = address, .p_rw_buffer = p_buf, .cb = NULL};
 
-    IsTransactionInProgress = true;
-    I2cHal_ProcessTransaction(&trans);
-
-    // Ugly, blocking implementation
-    while (IsTransactionInProgress)
-    {
-        // Do nothing
-    };
+    return I2cHal_ProcessTransaction(&trans);
 }
 
 void Pcf8523Drv_SetTime(struct Pcf8523Drv_TimeDate *p_time)
@@ -232,15 +206,19 @@ void Pcf8523Drv_SetTime(struct Pcf8523Drv_TimeDate *p_time)
     data_to_write[6] = Bin2bcd(p_time->year - 2000);
     data_to_write[7] = 0;
 
-    RtcWriteRegBuff(PCF8523_DRV_SECONDS, data_to_write, sizeof(data_to_write));
+    (void)RtcWriteRegBuff(PCF8523_DRV_SECONDS, data_to_write, sizeof(data_to_write));
 }
 
-void Pcf8523Drv_GetTime(struct Pcf8523Drv_TimeDate *p_time)
+bool Pcf8523Drv_GetTime(struct Pcf8523Drv_TimeDate *p_time)
 {
     ASSERT(p_time != NULL);
 
     uint8_t data_to_read[7];
-    RtcReadRegBuff(PCF8523_DRV_SECONDS, data_to_read, sizeof(data_to_read));
+    bool    status = RtcReadRegBuff(PCF8523_DRV_SECONDS, data_to_read, sizeof(data_to_read));
+    if (!status)
+    {
+        return false;
+    }
 
     p_time->milliseconds = 0;
     p_time->seconds      = Bcd2bin(data_to_read[0] & 0x7F);
@@ -249,50 +227,53 @@ void Pcf8523Drv_GetTime(struct Pcf8523Drv_TimeDate *p_time)
     p_time->day          = Bcd2bin(data_to_read[3]);
     p_time->month        = Bcd2bin(data_to_read[5]);
     p_time->year         = Bcd2bin(data_to_read[6]) + 2000;
+    return true;
 }
 
 bool Pcf8523Drv_IsResetState(void)
 {
-    uint8_t reg_val = RtcReadReg(PCF8523_DRV_CONTROL_3);
-    return (reg_val & PCF8523_DRV_CONTROL_3_VALID_BIT_MASK) == PCF8523_DRV_CONTROL_3_RESET_DEFAULT_VALUE;
+    uint8_t reg_val = 0;
+    bool    status  = RtcReadReg(PCF8523_DRV_CONTROL_3, &reg_val);
+    return (((reg_val & PCF8523_DRV_CONTROL_3_VALID_BIT_MASK) == PCF8523_DRV_CONTROL_3_RESET_DEFAULT_VALUE) && status);
 }
 
 static void RtcStart(void)
 {
-    uint8_t reg_val = RtcReadReg(PCF8523_DRV_CONTROL_1);
+    uint8_t reg_val = 0;
+    bool    status  = RtcReadReg(PCF8523_DRV_CONTROL_1, &reg_val);
     reg_val &= ~(1 << PCF8523_DRV_CONTROL_1_STOP_BIT);
-    RtcWriteReg(PCF8523_DRV_CONTROL_1, reg_val);
+    if (status)
+    {
+        (void)RtcWriteReg(PCF8523_DRV_CONTROL_1, reg_val);
+    }
 }
 
 static void ConfigureIntEverySecond(void)
 {
-    uint8_t reg_val = RtcReadReg(PCF8523_DRV_TMR_CLKOUT_CTRL);
+    uint8_t reg_val = 0;
+    RtcReadReg(PCF8523_DRV_TMR_CLKOUT_CTRL, &reg_val);
     reg_val |= (1 << PCF8523_DRV_TMR_CLKOUT_CTRL_TAM_BIT) | (1 << PCF8523_DRV_TMR_CLKOUT_CTRL_COF2_BIT) | (1 << PCF8523_DRV_TMR_CLKOUT_CTRL_COF1_BIT) |
                (1 << PCF8523_DRV_TMR_CLKOUT_CTRL_COF0_BIT);
-    RtcWriteReg(PCF8523_DRV_TMR_CLKOUT_CTRL, reg_val);
+    (void)RtcWriteReg(PCF8523_DRV_TMR_CLKOUT_CTRL, reg_val);
 
-    reg_val = RtcReadReg(PCF8523_DRV_CONTROL_1);
+    reg_val = 0;
+    RtcReadReg(PCF8523_DRV_CONTROL_1, &reg_val);
     reg_val |= (1 << PCF8523_DRV_CONTROL_1_SIE_BIT);
-    RtcWriteReg(PCF8523_DRV_CONTROL_1, reg_val);
+    (void)RtcWriteReg(PCF8523_DRV_CONTROL_1, reg_val);
 }
 
 static void ConfigureBatterySwitchOver(void)
 {
-    uint8_t reg_val = RtcReadReg(PCF8523_DRV_CONTROL_3);
+    uint8_t reg_val = 0;
+    RtcReadReg(PCF8523_DRV_CONTROL_3, &reg_val);
     reg_val &= ~((1 << PCF8523_DRV_CONTROL_3_PM0_BIT) | (1 << PCF8523_DRV_CONTROL_3_PM1_BIT) | (1 << PCF8523_DRV_CONTROL_3_PM2_BIT));
-    RtcWriteReg(PCF8523_DRV_CONTROL_3, reg_val);
+    (void)RtcWriteReg(PCF8523_DRV_CONTROL_3, reg_val);
 }
 
 static void ConfigureInternalCapacitors(void)
 {
-    uint8_t reg_val = RtcReadReg(PCF8523_DRV_CONTROL_1);
+    uint8_t reg_val = 0;
+    RtcReadReg(PCF8523_DRV_CONTROL_1, &reg_val);
     reg_val |= (1 << PCF8523_DRV_CONTROL_1_CAP_SEL_BIT);
-    RtcWriteReg(PCF8523_DRV_CONTROL_1, reg_val);
-}
-
-static void TransactionComplete(struct I2cTransaction *p_transaction)
-{
-    IsTransactionInProgress = false;
-
-    UNUSED(p_transaction);
+    (void)RtcWriteReg(PCF8523_DRV_CONTROL_1, reg_val);
 }

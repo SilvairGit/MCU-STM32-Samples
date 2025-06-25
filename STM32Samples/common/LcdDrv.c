@@ -68,9 +68,8 @@
 #define LCD_DRV_DATA 1
 #define LCD_DRV_FOUR_BITS 2
 
-static uint8_t       IsBacklightOnMask       = 0;
-static bool          IsInitialized           = false;
-static volatile bool IsTransactionInProgress = false;
+static uint8_t IsBacklightOnMask = 0;
+static bool    IsInitialized     = false;
 
 static void LcdDrv_SetBacklight(bool on);
 
@@ -83,8 +82,6 @@ static void LcdDrv_LcdSend(uint8_t value, uint8_t mode);
 static void LcdDrv_Write4bits(uint8_t value, uint8_t mode);
 
 static void LcdDrv_PulseEnable(uint8_t data);
-
-static void LcdDrv_TransactionCb(struct I2cTransaction *p_transaction);
 
 void LcdDrv_Init(void)
 {
@@ -225,17 +222,10 @@ static void LcdDrv_SetOutputPortValue(uint8_t port_value)
         .i2c_address  = LCD_DRV_PCF8574AT_ADDRESS,
         .reg_address  = port_value,
         .p_rw_buffer  = NULL,
-        .cb           = LcdDrv_TransactionCb,
+        .cb           = NULL,
     };
 
-    IsTransactionInProgress = true;
-
     I2cHal_ProcessTransaction(&transaction);
-
-    // TODO it is blocking right now. It requires redesign of the LcdDrv
-    while (IsTransactionInProgress)
-    {
-    }
 }
 
 static void LcdDrv_LcdSend(uint8_t value, uint8_t mode)
@@ -270,11 +260,4 @@ static void LcdDrv_PulseEnable(uint8_t data)
     LcdDrv_SetOutputPortValue(data | LCD_DRV_PIN_EN_MASK);
     Timestamp_DelayMs(1);
     LcdDrv_SetOutputPortValue(data & ~LCD_DRV_PIN_EN_MASK);
-}
-
-static void LcdDrv_TransactionCb(struct I2cTransaction *p_transaction)
-{
-    IsTransactionInProgress = false;
-
-    UNUSED(p_transaction);
 }

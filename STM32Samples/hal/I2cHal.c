@@ -22,6 +22,8 @@ static volatile bool                   IsAddressSent            = false;
 static void I2cHal_InitGpioAndErrata(void);
 static void I2cHal_InitI2c1(void);
 static void I2cHal_InitNvic(void);
+static void I2cHal_StartTransaction(struct I2cTransaction *p_transaction);
+
 
 void I2cHal_Init(void)
 {
@@ -41,17 +43,21 @@ bool I2cHal_IsInitialized(void)
     return IsInitialized;
 }
 
-void I2cHal_ProcessTransaction(struct I2cTransaction *p_transaction)
+bool I2cHal_ProcessTransaction(struct I2cTransaction *p_transaction)
 {
-    ASSERT(IsTransactionInProgress == false);
+    if (IsTransactionInProgress)
+    {
+        LOG_W("I2C transaction dropped");
+        return false;
+    }
 
-    IsTransactionInProgress  = true;
-    ActiveTransactionDataCnt = 0;
-    ActiveTransaction        = p_transaction;
-    IsAddressSent            = false;
+    I2cHal_StartTransaction(p_transaction);
 
-    LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_ACK);
-    LL_I2C_GenerateStartCondition(I2C1);
+    while (IsTransactionInProgress)
+    {
+        // Do nothing
+    }
+    return true;
 }
 
 bool I2cHal_IsAvaliable(uint8_t address)
@@ -66,7 +72,7 @@ bool I2cHal_IsAvaliable(uint8_t address)
 
     transaction.i2c_address = address;
 
-    I2cHal_ProcessTransaction(&transaction);
+    I2cHal_StartTransaction(&transaction);
 
     uint32_t transaction_time_start = Timestamp_GetCurrent();
     while (IsTransactionInProgress)
@@ -344,4 +350,17 @@ void I2C1_EV_IRQHandler(void)
 
         return;
     }
+}
+
+static void I2cHal_StartTransaction(struct I2cTransaction *p_transaction)
+{
+    ASSERT((p_transaction != NULL) && (IsTransactionInProgress == false));
+
+    IsTransactionInProgress  = true;
+    ActiveTransactionDataCnt = 0;
+    ActiveTransaction        = p_transaction;
+    IsAddressSent            = false;
+
+    LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_ACK);
+    LL_I2C_GenerateStartCondition(I2C1);
 }

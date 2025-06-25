@@ -243,8 +243,13 @@ static void OnSecondElapsed(void)
 
     if (ReceivedTimeGet)
     {
-        struct Pcf8523Drv_TimeDate date;
-        Pcf8523Drv_GetTime(&date);
+        struct Pcf8523Drv_TimeDate date   = {0};
+        bool                       status = Pcf8523Drv_GetTime(&date);
+
+        if (!status)
+        {
+            return;
+        }
 
         if (date.month > 12)
         {
